@@ -41,18 +41,22 @@ title(main="Total number of Steps", xlab="Number of Steps")
 
 ```{r}
 d2 <- d1
-d2$interval <- as.POSIXct(sprintf("%04d",d2$interval), format="%H%M")
+d2$interval <- as.POSIXct(sprintf("%04d",d2$interval), format="%H%M") 
 d4 <- group_by(d2,interval)
 d6 <- summarize(d4, Sum = sum(steps, na.rm=TRUE),Mean = mean(steps, na.rm=TRUE))
 plot(d6$interval, d6$Mean, type="l", main="",xlab="",ylab="Mean Steps", xaxt="n")
 title(main="Mean number of steps across hours of a day", xlab="Time interval (hrs)")
 axis.POSIXct(side=1, at=window(d6$interval,deltat=12), format="%H")
 ```
+Using sprintf, the discontinuity in the plot at the hour junctions (55 to 100), is removed.
 
 ##Question 2.2: Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 `r print("Interval with maximum steps is ")`
 Interval with maximum steps is: `r format(c(((d6[d6$Sum==max(d6$Sum),]$interval) - 300),(d6[d6$Sum==max(d6$Sum),]$interval)), "%H:%M")`
+
+Command for generating the interval with maximum step  
+format(c(((d6[d6\$Sum==max(d6$Sum),]\$interval) - 300),(d6[d6\$Sum==max(d6\$Sum),]\$interval)), "%H:%M")
 
 #Imputing missing values
 

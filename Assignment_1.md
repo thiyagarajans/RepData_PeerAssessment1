@@ -46,7 +46,7 @@ title(main="Total number of Steps", xlab="Number of Steps")
 
 ```r
 d2 <- d1
-d2$interval <- as.POSIXct(sprintf("%04d",d2$interval), format="%H%M")
+d2$interval <- as.POSIXct(sprintf("%04d",d2$interval), format="%H%M") 
 d4 <- group_by(d2,interval)
 d6 <- summarize(d4, Sum = sum(steps, na.rm=TRUE),Mean = mean(steps, na.rm=TRUE))
 plot(d6$interval, d6$Mean, type="l", main="",xlab="",ylab="Mean Steps", xaxt="n")
@@ -55,11 +55,15 @@ axis.POSIXct(side=1, at=window(d6$interval,deltat=12), format="%H")
 ```
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+Using sprintf, the discontinuity in the plot at the hour junctions (55 to 100), is removed.
 
 ##Question 2.2: Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 
 Interval with maximum steps is: 08:30, 08:35
+
+Command for generating the interval with maximum step  
+format(c(((d6[d6\$Sum==max(d6$Sum),]\$interval) - 300),(d6[d6\$Sum==max(d6\$Sum),]\$interval)), "%H:%M")
 
 #Imputing missing values
 
@@ -122,21 +126,7 @@ Using GGPLOT to make the desired plot
 
 ```r
 library(ggplot2)
-```
-
-```
-## Warning: package 'ggplot2' was built under R version 3.1.3
-```
-
-```r
 library(scales)
-```
-
-```
-## Warning: package 'scales' was built under R version 3.1.3
-```
-
-```r
 g <- ggplot(d10, aes(x=interval,y=Mean, col=day)) + geom_line(size=1.2) + facet_wrap(~day, ncol=1)
 g + xlab("Time (hrs)") + scale_x_datetime(labels=date_format("%H"))
 ```
