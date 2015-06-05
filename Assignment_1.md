@@ -8,7 +8,8 @@ output: html_document
 #Reproducible Analysis of Personal Movements Data
 
 ## Load the data (i.e. read.csv())
-```{r}
+
+```r
 setwd("D:/acad/coursera/Reproducible_Research/assn/RepData_PeerAssessment1")
 d1 <- read.csv("activity.csv")
 ```
@@ -19,7 +20,8 @@ d1 <- read.csv("activity.csv")
 
 Use 'dplyr' package for making the calculations, base plot system for the Histogram
 
-```{r}
+
+```r
 #detach(package:plyr) 
 library(dplyr)
 library(lubridate)
@@ -30,16 +32,19 @@ hist(d2$Sum, xlab="", main="")
 title(main="Total number of Steps", xlab="Number of Steps")
 ```
 
-## Question 1.2: Calculate and report the mean and median total number of steps taken per day
-`r print("Mean steps per day")` 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
 
-1. Mean Steps per day, mean(d2$Sum, na.rm=TRUE):  `r mean(d2$Sum, na.rm=TRUE)`  
-2. Median Steps per day, median(d2$Sum, na.rm=TRUE) : `r median(d2$Sum, na.rm=TRUE)`  
+## Question 1.2: Calculate and report the mean and median total number of steps taken per day
+ 
+
+1. Mean Steps per day, mean(d2$Sum, na.rm=TRUE):  9354.2295082  
+2. Median Steps per day, median(d2$Sum, na.rm=TRUE) : 10395  
 
 #Average Daily Activity Pattern
 ## Question 2.1: Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 d2 <- d1
 d2$interval <- as.POSIXct(sprintf("%04d",d2$interval), format="%H%M")
 d4 <- group_by(d2,interval)
@@ -49,22 +54,25 @@ title(main="Mean number of steps across hours of a day", xlab="Time interval (hr
 axis.POSIXct(side=1, at=window(d6$interval,deltat=12), format="%H")
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
 ##Question 2.2: Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-`r print("Interval with maximum steps is ")`
-Interval with maximum steps is: `r format(c(((d6[d6$Sum==max(d6$Sum),]$interval) - 300),(d6[d6$Sum==max(d6$Sum),]$interval)), "%H:%M")`
+
+Interval with maximum steps is: 08:30, 08:35
 
 #Imputing missing values
 
 ##Question 3.1: Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-Number of Records with missing Values in the field "Steps is" sum(is.na(d1$steps)): `r sum(is.na(d1$steps))` 
+Number of Records with missing Values in the field "Steps is" sum(is.na(d1$steps)): 2304 
 
 ##Question 3.2: Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
 Here I am replacing the missing values by the 'Mean' number of steps for that particular time interval averaged over all days.
 
-```{r}
+
+```r
 missing_values <- which(is.na(d1$steps))
 fill_d1 <- d1
 fill_d1$interval <- as.POSIXct(sprintf("%04d",fill_d1$interval), format="%H%M")
@@ -77,7 +85,8 @@ The Data Frame 'fill_d1' is the required data set with missing data filled in
 
 ##Question 3.4: Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
 
-```{r}
+
+```r
 d7 <- group_by(fill_d1, date)
 d8 <- summarize(d7,sum(steps),mean(steps))
 names(d8) <- c("Date", "Sum", "Mean")
@@ -85,8 +94,10 @@ hist(d8$Sum, xlab="", main="")
 title(main="Total number of Steps", xlab="Number of Steps")
 ```
 
-1. Mean Steps per Day, mean(d8$Sum): `r mean(d8$Sum)`
-2. Median Steps per Day, median(d8$Sum): `r median(d8$Sum)`
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
+1. Mean Steps per Day, mean(d8$Sum): 1.0766189 &times; 10<sup>4</sup>
+2. Median Steps per Day, median(d8$Sum): 1.0766189 &times; 10<sup>4</sup>
 
 The numbers have slightly changed.
 
@@ -94,7 +105,8 @@ The numbers have slightly changed.
 
 ##Question 4.1: Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 mut_d1 <- mutate(fill_d1,day="weekday", value=weekdays(date))
 mut_d1[mut_d1$value == "Saturday",]$day <- "weekend"
 mut_d1[mut_d1$value == "Sunday",]$day <- "weekend"
@@ -107,9 +119,26 @@ names(d10) <- c("day","interval","Sum","Mean")
 
 Using GGPLOT to make the desired plot
 
-```{r}
+
+```r
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.1.3
+```
+
+```r
 library(scales)
+```
+
+```
+## Warning: package 'scales' was built under R version 3.1.3
+```
+
+```r
 g <- ggplot(d10, aes(x=interval,y=Mean, col=day)) + geom_line(size=1.2) + facet_wrap(~day, ncol=1)
 g + xlab("Time (hrs)") + scale_x_datetime(labels=date_format("%H"))
 ```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 

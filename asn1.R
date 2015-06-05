@@ -1,30 +1,31 @@
+library(plyr)
 library(dplyr)
 library(ggplot2)
 d1 <- read.csv("activity.csv")
-d2 <- subset(d1, complete.cases(date,steps,interval))
-d2$date <- as.Date(d2$date, "%Y-%m-%d")
 d1$date <- as.Date(d1$date,"%Y-%m-%d")
 #Q1
-d3 <- group_by(d2, date)
-d5 <- summarize(d3,sum(steps),mean(steps))
+d3 <- group_by(d1, date)
+d5 <- summarize(d3, sum(steps, na.rm=TRUE), mean(steps, na.rm=TRUE))
 names(d5) <- c("Date", "Sum", "Mean")
 hist(d5$Sum, xlab="", main="")
 title(main="Total number of Steps", xlab="Number of Steps")
 print("Mean steps per day")
-mean(d5$Sum)
+mean(d5$Sum, na.rm=TRUE)
 print ("Median steps per day")
-median(d5$Sum)
+median(d5$Sum, na.rm=TRUE)
 
 #Q2
-d4 <- group_by(d2,interval)
-d6 <- summarize(d4,sum(steps),mean(steps))
-names(d6) <- c("interval", "Sum", "Mean")
-plot(d6$interval, d6$Mean, type="l", main="",xlab="",ylab="Mean Steps", xaxt="n")
-title(main="Mean number of steps across hours of a day", xlab="Time interval (hrs)")
-axis(1, at=c(seq(0,2400,100)), labels=seq(0,24))
+d2 <- d1
+d2$interval <- as.POSIXct(sprintf("%04d",d2$interval), format="%H%M")
 
+d4 <- group_by(d2,interval)
+d6 <- summarize(d4,sum(steps, na.rm=TRUE),mean(steps, na.rm=TRUE))
+names(d6) <- c("Interval", "Sum", "Mean")
+plot(d6$Interval, d6$Mean, type="l", main="",xlab="",ylab="Mean Steps", xaxt="n")
+title(main="Mean number of steps across hours of a day", xlab="Time interval (hrs)")
+axis.POSIXct(side=1, at=window(d6$Interval,deltat=12), format="%H")
 print("Interval with maximum steps is ")
-c(((d6[d6$Sum==max(d6$Sum),]$interval) -5),(d6[d6$Sum==max(d6$Sum),]$interval))
+max_interval <- d6[d6$Sum==max(d6$Sum),]$Interval
 
 #Q3.1
 print("Number of rows with missing values")
@@ -36,8 +37,9 @@ missing_values <- which(is.na(d1$steps))
 #Missing values in steps filled with Mean steps value of the corresponding
 #time interval, averaged over all days.
 fill_d1 <- d1
+fill_d1$interval <- as.POSIXct(sprintf("%04d",fill_d1$interval), format="%H%M")
 
-for (i in missing_values) {fill_d1$steps[i] <- d6[d6$interval==fill_d1$interval[i],]$Mean }
+for (i in missing_values) {fill_d1$steps[i] <- d6[d6$Interval==fill_d1$interval[i],]$Mean }
 
 #Q3.3
 d7 <- group_by(fill_d1, date)
